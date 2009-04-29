@@ -51,12 +51,30 @@ readmagick will not be built.
     }
     return args
 
+long_description = '''ReadMagick
 
-if __name__ == '__main__':
-    readmagick = Extension('readmagick', sources = ['readmagick/readmagick.cpp'],  **readmagick_args())
-    setup (name = 'readmagick',
-           version = '1.0',
-           description = 'Read and write images using ImageMagick',
-           ext_modules = [readmagick]
-           )
+Read and write images using ImageMagick++.
+
+Supports modern image formats such as JPEG2000.
+'''
+classifiers = [
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: GNU General Public License (GPL)',
+    'Operating System :: OS Independent',
+    'Programming Language :: C++',
+    'Topic :: Scientific/Engineering',
+    ]
+
+
+readmagick = Extension('readmagick', sources = ['readmagick/readmagick.cpp'],  **readmagick_args())
+setup(name = 'readmagick',
+      version = '1.0',
+      description = 'Read and write images using ImageMagick',
+      long_description = long_description,
+      author = 'Luis Pedro Coelho',
+      author_email = 'lpc@mcu.edu',
+      license = 'GPL',
+      ext_modules = [readmagick]
+      )
 
