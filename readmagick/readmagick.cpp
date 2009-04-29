@@ -194,13 +194,18 @@ const char * readimgfromblob_doc =
     ;
 
 const char * writeimg_doc =
-    "writeimg(array,filename)\n"
+    "writeimg(array, filename)\n"
     "\n"
     "Writes image array to filename using Image Magick.\n"
     "\n"
     "Handles colour images (stored in HxWx3 format) or grey-scale (stored in HxW format).\n"
     "Handles images stored as either uint8 (in which case the output is 8-bit) or\n"
     "uint16 (in which case the output may be 16-bit if the output format supports it).\n"
+    "\n"
+    "Limitations\n"
+    "-----------\n"
+    "\n"
+    "Currently only handles contiguous arrays.\n"
     ;
 
 PyMethodDef methods[] = {
@@ -217,9 +222,13 @@ const char * module_doc =
     "all image formats that ImageMagick supports.\n"
     "\n"
     "\n"
-    "This module provides two functions:\n"
-    "   - readimg(filename): reads an image from a file\n"
-    "   - readimgfromblob(blob): reads an image from a blog (character string)\n"
+    "Functions\n"
+    "---------\n"
+    "\n"
+    "This module provides three functions:\n"
+    "   * readimg(filename): reads an image from a file\n"
+    "   * readimgfromblob(blob): reads an image from a blog (character string)\n"
+    "   * writeimg(img, filename): writes an image to a file (format is inferred from extension).\n"
     ;
 }
 
