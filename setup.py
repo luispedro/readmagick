@@ -69,7 +69,7 @@ classifiers = [
 
 readmagick = Extension('readmagick', sources = ['readmagick/readmagick.cpp'],  **readmagick_args())
 setup(name = 'readmagick',
-      version = '1.0',
+      version = '0.9',
       description = 'Read and write images using ImageMagick',
       long_description = long_description,
       author = 'Luis Pedro Coelho',
