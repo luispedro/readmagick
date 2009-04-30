@@ -80,7 +80,7 @@ PyObject* array_from_image(Magick::Image& img) {
             PyErr_SetString(PyExc_EOFError,"Magick++ issue: Quantum depth is neither 8 nor 16.\nDon't know how to handle that.");
             return 0;
         }
-        ret = (PyArrayObject*)PyArray_FromDims(2+colourimage,dimensions,type);
+        ret = (PyArrayObject*)PyArray_SimpleNew(2+colourimage, dimensions, type);
         if (!ret) {
             PyErr_SetString(PyExc_MemoryError,"Out of Memory");
             return 0;
@@ -105,6 +105,7 @@ PyObject* readimg(PyObject* self, PyObject* args) {
         std::string fname = PyString_AsString(input);
         Image img;
         try {
+            gil_release nogil;
             img.read(fname);
         } catch ( WarningCoder &warning ) {
             // Issuing warnings turned the program too verbose
@@ -124,10 +125,13 @@ PyObject* readimgfromblob(PyObject* self, PyObject* args) {
          PyErr_SetString(PyExc_TypeError,"readimgfromblob takes image data as input");
          return 0;
     }
+    const char* inputstr = PyString_AsString(input);
+    const unsigned long inputsize = PyString_Size(input);
     try {
+        gil_release nogil;
         Image img;
         try {
-            img.read(Blob(PyString_AsString(input),PyString_Size(input)));
+            img.read(Blob(inputstr, inputsize));
         } catch ( WarningCoder &warning ) {
             // Issuing warnings turned the program too verbose
             //
@@ -156,14 +160,14 @@ PyObject* writeimg(PyObject* self, PyObject* args) {
         if (!PyArray_Check(input)) {
             throw std::runtime_error("writeimg: Can only handle inputs of type numpy.ndarray.");
         }
-        input = PyArray_GETCONTIGUOUS(input);
-        holdref input_ref_(input);
         if (PyArray_NDIM(input) > 3 || PyArray_NDIM(input) < 2) {
             throw std::runtime_error("writeimg: Can only handle arrays of the form H x W  or H x W x 3.");
         }
         if (PyArray_NDIM(input) == 3 && PyArray_DIM(input,2) != 3) {
             throw std::runtime_error("writeimg: Can only handle arrays of the form H x W  or H x W x 3.");
         }
+        input = PyArray_GETCONTIGUOUS(input);
+        holdref input_ref_(input);
         {
             gil_release nogil_;
             const int height = PyArray_DIM(input,0);
