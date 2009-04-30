@@ -262,6 +262,7 @@ extern "C"
 void initreadmagick()
   {
     import_array();
-    (void)Py_InitModule3("readmagick", methods, module_doc);
+    PyObject* module = Py_InitModule3("readmagick", methods, module_doc);
+    PyModule_AddStringConstant(module,"__version__","1.0.1");
   }
 
