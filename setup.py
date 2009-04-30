@@ -22,14 +22,19 @@
 # For additional information visit http://murphylab.web.cmu.edu or
 # send email to murphy@cmu.edu
 
-import popen2
+import subprocess
 from numpy.distutils.core import setup, Extension
 
+def popen3(cmd):
+    p = subprocess.Popen(cmd, shell=True,
+        stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+    return p.stdout, p.stdin, p.stderr
+
 def readmagick_args(verbose=True):
-    output,input,error=popen2.popen3('pkg-config ImageMagick++ --libs')
+    output,input,error = popen3('pkg-config ImageMagick++ --libs')
     errors = error.read()
     if errors:
-        output,input,error=popen2.popen3('ImageMagick++-config --libs')
+        output,input,error = popen3('ImageMagick++-config --libs')
         errors += error.read()
     if errors:
         if verbose:
@@ -69,7 +74,7 @@ classifiers = [
 
 readmagick = Extension('readmagick', sources = ['readmagick/readmagick.cpp'],  **readmagick_args())
 setup(name = 'readmagick',
-      version = '0.9',
+      version = '1.0',
       description = 'Read and write images using ImageMagick',
       long_description = long_description,
       classifiers = classifiers,
