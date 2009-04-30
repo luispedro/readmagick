@@ -35,6 +35,26 @@ extern "C" {
 
 using namespace Magick;
 namespace {
+
+struct holdref {
+    holdref(PyObject* obj):obj(obj) { }
+    holdref(PyArrayObject* obj):obj((PyObject*)obj) { }
+    ~holdref() { Py_DECREF(obj); }
+  
+private:  
+    PyObject* obj;
+};
+
+struct gil_release {
+    gil_release() {
+        _save = PyEval_SaveThread();
+    }
+    ~gil_release() {
+        PyEval_RestoreThread(_save);
+    }
+    PyThreadState *_save;
+};
+
 PyObject* array_from_image(Magick::Image& img) {
     PyArrayObject* ret = 0;
     try {
@@ -133,35 +153,37 @@ PyObject* writeimg(PyObject* self, PyObject* args) {
          return 0;
     }
     try {
+        if (!PyArray_Check(input)) {
+            throw std::runtime_error("writeimg: Can only handle inputs of type numpy.ndarray.");
+        }
+        input = PyArray_GETCONTIGUOUS(input);
+        holdref input_ref_(input);
         if (PyArray_NDIM(input) > 3 || PyArray_NDIM(input) < 2) {
             throw std::runtime_error("writeimg: Can only handle arrays of the form H x W  or H x W x 3.");
         }
         if (PyArray_NDIM(input) == 3 && PyArray_DIM(input,2) != 3) {
             throw std::runtime_error("writeimg: Can only handle arrays of the form H x W  or H x W x 3.");
         }
-        if (!PyArray_ISCARRAY(input)) {
-            throw std::runtime_error("writeimg: Can only handle contiguous arrays");
+        {
+            gil_release nogil_;
+            const int height = PyArray_DIM(input,0);
+            const int width = PyArray_DIM(input,1);
+            const bool is_colour = (PyArray_NDIM(input) > 2);
+            const char * const pixel_ordering = is_colour ? "RGB" : "I";
+            StorageType storage_type;
+            if (PyArray_TYPE(input) == PyArray_UBYTE) {
+                storage_type = CharPixel;
+            } else if (PyArray_TYPE(input) == PyArray_USHORT) {
+                storage_type = ShortPixel;
+            } else {
+                throw std::runtime_error("writeimg: Cannot handle this type (only handles uint8 & uint16)");
+            }
+            Image img(width,height,pixel_ordering,storage_type,PyArray_DATA(input));
+            img.write(output_filename);
         }
-        // if (!PyArray_ISCARRAY(input)) {
-        //     input = PyArray_MAKE_CONTINGUOUS(input);
-        //  }
-        const int height = PyArray_DIM(input,0);
-        const int width = PyArray_DIM(input,1);
-        const bool is_colour = (PyArray_NDIM(input) > 2);
-        const char * const pixel_ordering = is_colour ? "RGB" : "I";
-        StorageType storage_type;
-        if (PyArray_TYPE(input) == PyArray_UBYTE) {
-            storage_type = CharPixel;
-        } else if (PyArray_TYPE(input) == PyArray_USHORT) {
-            storage_type = ShortPixel;
-        } else {
-            throw std::runtime_error("writeimg: Cannot handle this type (only handles uint8 & uint16)");
-        }
-        Image img(width,height,pixel_ordering,storage_type,PyArray_DATA(input));
-        img.write(output_filename);
         Py_RETURN_NONE;
     } catch ( std::exception& error_ ) {
-        PyErr_SetString(PyExc_EOFError,error_.what());
+        PyErr_SetString(PyExc_ValueError,error_.what());
         return 0;
     }
 }

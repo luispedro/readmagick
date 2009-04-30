@@ -69,6 +69,7 @@ def test_uint8_color():
         assert C.shape == C2.shape
         assert numpy.all(C == C2)
     yield test_one, A, _PNG, True
+    yield test_one, A[::-1,::-1,:], _PNG, True
     yield test_one, B, _PNG, True
     yield test_one, C, _TIFF, False
     yield test_one, D, _TIFF, False
