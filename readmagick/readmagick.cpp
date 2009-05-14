@@ -231,7 +231,7 @@ const char * writeimg_doc =
     "Limitations\n"
     "-----------\n"
     "\n"
-    "Currently only handles contiguous arrays.\n"
+    "Currently cannot handle Boolean (1-bit) arrays.\n"
     ;
 
 PyMethodDef methods[] = {
