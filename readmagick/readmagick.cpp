@@ -62,7 +62,7 @@ PyObject* array_from_image(Magick::Image& img) {
         unsigned w = size.width();
         unsigned h = size.height();
 
-        int dimensions[3];
+        npy_intp dimensions[3];
         dimensions[0] = h;
         dimensions[1] = w;
         dimensions[2] = 3;
@@ -231,7 +231,7 @@ const char * writeimg_doc =
     "Limitations\n"
     "-----------\n"
     "\n"
-    "Currently cannot handle Boolean (1-bit) arrays.\n"
+    "Currently only handles contiguous arrays.\n"
     ;
 
 PyMethodDef methods[] = {

@@ -31,30 +31,37 @@ def popen3(cmd):
     return p.stdout, p.stdin, p.stderr
 
 def readmagick_args(verbose=True):
-    output,input,error = popen3('pkg-config ImageMagick++ --libs')
-    errors = error.read()
-    if errors:
-        output,input,error = popen3('ImageMagick++-config --libs')
-        errors += error.read()
-    if errors:
-        if verbose:
-            print '''
+    def _execute(opts):
+        output,input,error = popen3('pkg-config ImageMagick++ %s' % opts)
+        errors = error.read()
+        if errors:
+            output,input,error = popen3('ImageMagick++-config %s' % opts)
+            errors += error.read()
+        if errors:
+            if verbose:
+                print '''
 Could not find ImageMagick++ headers using
 pkg-config or ImageMagick++-config.
 
 Error was: %s
 
 readmagick will not be built.
-''' % errors
+    ''' % errors
+            raise ValueError
+        tokens = output.readline().split()
+        input.close()
+        output.close()
+        return tokens
+    try:
+        libstokens = _execute('--libs')
+        cflagstokens = _execute('--cflags')
+        return {
+            'libraries'    : [t[2:] for t in libstokens if t.startswith('-l')],
+            'library_dirs' : [t[2:] for t in libstokens if t.startswith('-L')],
+            'include_dirs' : [t[2:] for t in cflagstokens if t.startswith('-I')],
+        }
+    except:
         return None
-    tokens = output.readline().split()
-    input.close()
-    output.close()
-    args={ 'libraries'    : [t[2:] for t in tokens if t.startswith('-l')],
-           'include_dirs' : [t[2:] for t in tokens if t.startswith('-I')],
-           'library_dirs' : [t[2:] for t in tokens if t.startswith('-L')],
-    }
-    return args
 
 long_description = '''ReadMagick
 
@@ -74,7 +81,7 @@ classifiers = [
 
 readmagick = Extension('readmagick', sources = ['readmagick/readmagick.cpp'],  **readmagick_args())
 setup(name = 'readmagick',
-      version = '1.0.2',
+      version = '1.0.3',
       description = 'Read and write images using ImageMagick',
       long_description = long_description,
       classifiers = classifiers,
