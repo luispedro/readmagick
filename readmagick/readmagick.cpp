@@ -128,9 +128,9 @@ PyObject* readimgfromblob(PyObject* self, PyObject* args) {
     const char* inputstr = PyString_AsString(input);
     const unsigned long inputsize = PyString_Size(input);
     try {
-        gil_release nogil;
         Image img;
         try {
+            gil_release nogil;
             img.read(Blob(inputstr, inputsize));
         } catch ( WarningCoder &warning ) {
             // Issuing warnings turned the program too verbose
