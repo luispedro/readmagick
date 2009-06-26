@@ -153,7 +153,7 @@ PyObject* writeimg(PyObject* self, PyObject* args) {
          return 0;
     }
 	if (!PyArg_ParseTuple(args,"Os",&input,&output_filename)) {
-         PyErr_SetString(PyExc_TypeError,"writeimg take two arguments: an array and a filename.");
+         PyErr_SetString(PyExc_TypeError,"writeimg takes two arguments: an array and a filename.");
          return 0;
     }
     try {
