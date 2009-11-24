@@ -86,7 +86,7 @@ setup(name = 'readmagick',
       long_description = long_description,
       classifiers = classifiers,
       author = 'Luis Pedro Coelho',
-      author_email = 'lpc@mcu.edu',
+      author_email = 'lpc@cmu.edu',
       license = 'GPL',
       ext_modules = [readmagick]
       )
